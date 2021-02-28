@@ -1,0 +1,57 @@
+### Create board
+POST https://api.trello.com/1/boards/?name=My Board 2&key={{trelloKey}}&token={{trelloToken}}&defaultLists=false
+
+> {%
+ client.test("Request executed successfully", function () {
+   client.assert(response.status === 200, "Response status is not 200")
+ });
+
+ client.test("Board should be created", function () {
+   client.assert(response.body.name === "My Board 2")
+   client.assert(!response.body.closed)
+ })
+
+ client.test("Board should be private", function () {
+   client.assert(response.body.prefs.permissionLevel === "private")
+ })
+
+client.global.set("boardId", response.body.id);
+ %}
+
+### Create Checklist
+POST https://api.trello.com/1/lists?key={{trelloKey}}&token={{trelloToken}}&name=A list&idBoard={{boardId}}
+
+> {%
+client.test("Status code is 200", function () {
+  client.assert(response.status === 200, "Response is not 200")
+});
+
+client.test("List should be created", function () {
+
+  client.assert(response.body.name === "A list");
+  client.assert(response.body.closed === false);
+})
+
+client.test("List was created inside the board", function () {
+  client.assert(response.body.idBoard === client.global.get("boardId"));
+})
+ %}
+
+### Delete board
+DELETE https://api.trello.com/1/boards/{{boardId}}?key={{trelloKey}}&token={{trelloToken}}
+
+> {%
+ client.test("Status code is 200", function () {
+  client.assert(response.status === 200, "Response is not 200")
+});
+
+ client.test("List was deleted", function () {
+   client.assert(response.body._value === null);
+ })
+
+ client.global.clear("boardId");
+
+ client.test("Board ID Cleared", function () {
+   client.assert(client.global.get("boardId") === null)
+ })
+ %}
