@@ -6,12 +6,14 @@ function getRandomNumber() {
   return Math.random() * 100;
 }
 
-client.global.set("boardName", getRandomNumber());
+client.global.set("boardName", getRandomNumber().toString());
 client.global.set("listName", "A list");
 %}
 
 ### Create board
 POST {{trelloUrl}}{{trelloApiVersion}}/boards/?name={{boardName}}&key={{trelloKey}}&token={{trelloToken}}&defaultLists=false
+
+{}
 
 > {%
  client.test("Request executed successfully", function () {
@@ -32,6 +34,8 @@ client.global.set("boardId", response.body.id);
 
 ### Create Checklist
 POST {{trelloUrl}}{{trelloApiVersion}}/lists?key={{trelloKey}}&token={{trelloToken}}&name={{listName}}&idBoard={{boardId}}
+
+{}
 
 > {%
 client.test("Status code is 200", function () {
@@ -64,6 +68,6 @@ DELETE {{trelloUrl}}{{trelloApiVersion}}/boards/{{boardId}}?key={{trelloKey}}&to
  client.global.clearAll();
 
  client.test("Board ID Cleared", function () {
-   client.assert(client.global.get("boardId") === null)
+   client.assert(client.global.get("boardId") === null || client.global.get("boardId") === undefined)
  })
  %}
