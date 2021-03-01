@@ -1,5 +1,17 @@
+### Pre Request
+GET https://example.com
+
+> {%
+function getRandomNumber() {
+  return Math.random() * 100;
+}
+
+client.global.set("boardName", getRandomNumber());
+client.global.set("listName", "A list");
+%}
+
 ### Create board
-POST https://api.trello.com/1/boards/?name=My Board 2&key={{trelloKey}}&token={{trelloToken}}&defaultLists=false
+POST {{trelloUrl}}{{trelloApiVersion}}/boards/?name={{boardName}}&key={{trelloKey}}&token={{trelloToken}}&defaultLists=false
 
 > {%
  client.test("Request executed successfully", function () {
@@ -7,7 +19,7 @@ POST https://api.trello.com/1/boards/?name=My Board 2&key={{trelloKey}}&token={{
  });
 
  client.test("Board should be created", function () {
-   client.assert(response.body.name === "My Board 2")
+   client.assert(response.body.name === client.global.get("boardName"))
    client.assert(!response.body.closed)
  })
 
@@ -19,7 +31,7 @@ client.global.set("boardId", response.body.id);
  %}
 
 ### Create Checklist
-POST https://api.trello.com/1/lists?key={{trelloKey}}&token={{trelloToken}}&name=A list&idBoard={{boardId}}
+POST {{trelloUrl}}{{trelloApiVersion}}/lists?key={{trelloKey}}&token={{trelloToken}}&name={{listName}}&idBoard={{boardId}}
 
 > {%
 client.test("Status code is 200", function () {
@@ -28,7 +40,7 @@ client.test("Status code is 200", function () {
 
 client.test("List should be created", function () {
 
-  client.assert(response.body.name === "A list");
+  client.assert(response.body.name === client.global.get("listName"));
   client.assert(response.body.closed === false);
 })
 
@@ -38,7 +50,7 @@ client.test("List was created inside the board", function () {
  %}
 
 ### Delete board
-DELETE https://api.trello.com/1/boards/{{boardId}}?key={{trelloKey}}&token={{trelloToken}}
+DELETE {{trelloUrl}}{{trelloApiVersion}}/boards/{{boardId}}?key={{trelloKey}}&token={{trelloToken}}
 
 > {%
  client.test("Status code is 200", function () {
@@ -49,7 +61,7 @@ DELETE https://api.trello.com/1/boards/{{boardId}}?key={{trelloKey}}&token={{tre
    client.assert(response.body._value === null);
  })
 
- client.global.clear("boardId");
+ client.global.clearAll();
 
  client.test("Board ID Cleared", function () {
    client.assert(client.global.get("boardId") === null)
